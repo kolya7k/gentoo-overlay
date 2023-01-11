@@ -13,7 +13,6 @@
   <flag name="rocksdb">Add support for RocksDB; a key/value, LSM database optimized for flash storage</flag>
   <flag name="router">Build the MySQL router program</flag>
   <flag name="server">Build the server program</flag>
-  <flag name="tokudb">Add support for TokuDB storage engine</flag>
-  <flag name="tokudb-backup-plugin">Builds the TokuDB backup plugin</flag>
+  <flag name="fido">Build FIDO authentification plugin</flag>
 </use>
 </pkgmetadata>
