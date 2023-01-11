@@ -15,4 +15,5 @@
   <flag name="server">Build the server program</flag>
   <flag name="fido">Build FIDO authentification plugin</flag>
 </use>
+<remote-id type="github">percona/percona-server</remote-id>
 </pkgmetadata>

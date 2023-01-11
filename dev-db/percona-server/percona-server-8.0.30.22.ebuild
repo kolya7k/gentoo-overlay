@@ -85,7 +85,7 @@ DEPEND="
 
 RDEPEND="
 	${COMMON_DEPEND}
-	!dev-db/mariadb !dev-db/mariadb-galera !dev-db/mysql !dev-db/mysql-cluster
+	!dev-db/mariadb !dev-db/mysql
 	!dev-db/percona-server:0
 	!dev-db/percona-server:5.7
 	selinux? ( sec-policy/selinux-mysql )
@@ -100,7 +100,7 @@ RDEPEND="
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )"
 
 PATCHES=(
-    "${WORKDIR}"/"${PN}"-patches
+	"${WORKDIR}"/"${PN}"-patches
 )
 
 mysql_init_vars() {
