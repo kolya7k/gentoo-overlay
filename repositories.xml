@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<repositories version="1.0">
+  <repo quality="experimental" status="unofficial">
+    <name>kolya7k</name>
+      <description lang="en">Personal kolya7k overlay</description>
+        <homepage>https://github.com/kolya7k/gentoo-overlay</homepage>
+        <owner type="person">
+            <name>Nikolay</name>
+            <email>nikolay@rockstonedev.com</email>
+        </owner>
+        <source type="git">git@github.com:kolya7k/gentoo-overlay.git</source>
+        <feed>https://github.com/kolya7k/gentoo-overlay/commits/master.atom</feed>
+  </repo>
+</repositories>
