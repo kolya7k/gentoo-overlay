@@ -19,7 +19,7 @@ PATCH_SET=( https://cdn.realcdn.ru/distfiles/${CATEGORY}/${PN}/${P}-patches-02.t
 
 HOMEPAGE="https://www.percona.com/software/mysql-database/percona-server https://github.com/percona/percona-server"
 DESCRIPTION="Fully compatible, enhanced and open source drop-in replacement for MySQL"
-SRC_URI="https://www.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/source/tarball/${PN}-${MY_PV}.tar.gz"
+SRC_URI="https://downloads.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/source/tarball/${PN}-${MY_PV}.tar.gz"
 SRC_URI+=" https://dl.bintray.com/boostorg/release/${MY_BOOST_VERSION}/source/boost_$(ver_rs 1- _ ${MY_BOOST_VERSION}).tar.bz2"
 SRC_URI+=" ${PATCH_SET[@]}"
 # Shorten the path because the socket path length must be shorter than 107 chars
