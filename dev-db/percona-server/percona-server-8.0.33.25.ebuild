@@ -46,7 +46,6 @@ COMMON_DEPEND="
 	>=app-arch/lz4-0_p131:=
 	app-arch/zstd:=
 	sys-libs/ncurses:0=
-	>=sys-libs/zlib-1.2.3:0=
 	>=dev-libs/openssl-1.0.0:0=
 	server? (
 		dev-libs/icu:=
@@ -233,7 +232,7 @@ src_configure() {
 
 		# Using bundled editline to get CTRL+C working
 		-DWITH_EDITLINE=bundled
-		-DWITH_ZLIB=system
+		-DWITH_ZLIB=bundled
 		-DWITH_SSL=system
 		-DWITH_LIBWRAP=0
 		-DENABLED_LOCAL_INFILE=1
