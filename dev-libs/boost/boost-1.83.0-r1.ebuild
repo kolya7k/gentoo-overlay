@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{9..11} )
+PYTHON_COMPAT=( python3_{10..12} )
 
 inherit flag-o-matic multiprocessing python-r1 toolchain-funcs multilib-minimal
 
@@ -16,8 +16,8 @@ S="${WORKDIR}/${PN}_${MY_PV}"
 
 LICENSE="Boost-1.0"
 SLOT="0/${PV}" # ${PV} instead of the major version due to bug 486122
-KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~arm64-macos ~ppc-macos ~x64-macos ~x64-solaris"
-IUSE="bzip2 context debug doc icu lzma +nls mpi numpy python tools zlib zstd static-libs"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~arm64-macos ~ppc-macos ~x64-macos ~x64-solaris"
+IUSE="bzip2 +context debug doc icu lzma +nls mpi numpy python +stacktrace tools zlib zstd static-libs"
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 # the tests will never fail because these are not intended as sanity
 # tests at all. They are more a way for upstream to check their own code
@@ -47,11 +47,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.79.0-build-auto_index-tool.patch
 	# Boost.MPI's __init__.py doesn't work on Py3
 	"${FILESDIR}"/${PN}-1.79.0-boost-mpi-python-PEP-328.patch
-	"${FILESDIR}"/${PN}-1.80.0-fix-mips1-transition.patch
 	"${FILESDIR}"/${PN}-1.81.0-phoenix-multiple-definitions.patch
-
-	# (upstreamed)
-	"${FILESDIR}"/${PN}-1.82.0-context-arm64.patch
 )
 
 python_bindings_needed() {
@@ -166,7 +162,7 @@ src_configure() {
 		$(usev !mpi --without-mpi)
 		$(usev !nls --without-locale)
 		$(usev !context '--without-context --without-coroutine --without-fiber')
-		--without-stacktrace
+		$(usev !stacktrace --without-stacktrace)
 		--boost-build="${BROOT}"/usr/share/b2/src
 		--layout=system
 		# building with threading=single is currently not possible
