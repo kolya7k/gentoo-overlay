@@ -48,8 +48,10 @@ PATCHES=(
 	# Boost.MPI's __init__.py doesn't work on Py3
 	"${FILESDIR}"/${PN}-1.79.0-boost-mpi-python-PEP-328.patch
 	"${FILESDIR}"/${PN}-1.81.0-phoenix-multiple-definitions.patch
-	"${FILESDIR}"/${PN}-1.83.0-unordered-uaf.patch
 	"${FILESDIR}"/${PN}-1.83.0-math-gcc14.patch
+
+	"${FILESDIR}"/${PN}-1.84.0-signals2-patch1.patch
+	"${FILESDIR}"/${PN}-1.84.0-signals2-patch2.patch
 )
 
 python_bindings_needed() {
