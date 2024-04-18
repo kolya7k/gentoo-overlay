@@ -201,8 +201,7 @@ src_configure() {
 	# Bug #114895, bug #110149
 	filter-flags "-O" "-O[01]"
 
-	# Code is now requiring C++17 due to https://github.com/mysql/mysql-server/commit/236ab55bedd8c9eacd80766d85edde2a8afacd08
-	append-cxxflags -std=c++17
+	append-cxxflags -std=c++20
 
 	CMAKE_BUILD_TYPE="RelWithDebInfo"
 
