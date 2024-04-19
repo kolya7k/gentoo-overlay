@@ -15,7 +15,7 @@ MY_MAJOR_PV=$(ver_cut 1-2)
 MY_RELEASE_NOTES_URI="https://www.percona.com/doc/percona-server/${MY_MAJOR_PV}/"
 
 # Patch version
-PATCH_SET=( https://cdn.realcdn.ru/distfiles/${CATEGORY}/${PN}/${P}-patches.tar.xz )
+PATCH_SET=( https://cdn.realcdn.ru/distfiles/${CATEGORY}/${PN}/${P}-patches-01.tar.xz )
 
 HOMEPAGE="https://www.percona.com/software/mysql-database/percona-server https://github.com/percona/percona-server"
 DESCRIPTION="Fully compatible, enhanced and open source drop-in replacement for MySQL"
