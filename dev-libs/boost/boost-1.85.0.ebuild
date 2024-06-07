@@ -9,6 +9,8 @@ EAPI=8
 # (e.g. https://www.boost.org/users/history/version_1_83_0.html)
 # Note that the latter may sometimes feature patches not on the former too.
 
+# FIXME: cleanup subslot after 1.85.0
+
 PYTHON_COMPAT=( python3_{10..12} )
 
 inherit flag-o-matic multiprocessing python-r1 toolchain-funcs multilib-minimal
@@ -21,7 +23,7 @@ SRC_URI="https://boostorg.jfrog.io/artifactory/main/release/${PV}/source/boost_$
 S="${WORKDIR}/${PN}_${MY_PV}"
 
 LICENSE="Boost-1.0"
-SLOT="0/${PV}" # ${PV} instead of the major version due to bug 486122
+SLOT="0/${PV}.1" # ${PV} instead of the major version due to bug 486122
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~arm64-macos ~ppc-macos ~x64-macos ~x64-solaris"
 IUSE="bzip2 +context debug doc icu lzma +nls mpi numpy python +stacktrace tools zlib zstd static-libs"
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
@@ -51,6 +53,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.81.0-disable_icu_rpath.patch
 	"${FILESDIR}"/${PN}-1.79.0-build-auto_index-tool.patch
 	"${FILESDIR}"/${PN}-1.85.0-bcp-filesystem.patch
+	"${FILESDIR}"/${PN}-1.85.0-container-aliasing.patch
 )
 
 create_user-config.jam() {
