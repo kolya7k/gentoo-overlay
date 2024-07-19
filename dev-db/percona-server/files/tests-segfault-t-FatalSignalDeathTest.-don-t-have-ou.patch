@@ -1,0 +1,17 @@
+From a7bfd879b0a083518291def8d6bee803514b2667 Mon Sep 17 00:00:00 2001
+From: Thomas Deutschmann <whissi@gentoo.org>
+Date: Wed, 4 Aug 2021 18:46:25 +0200
+Subject: [PATCH 5/7] tests: segfault-t: FatalSignalDeathTest.* don't have
+ output in Gentoo sandbox
+
+Signed-off-by: Thomas Deutschmann <whissi@gentoo.org>
+--- a/unittest/gunit/segfault-t.cc
++++ b/unittest/gunit/segfault-t.cc
+@@ -96,7 +96,7 @@ TEST_F(FatalSignalDeathTest, Abort) {
+       abort(), ContainsRangeOfOccurrences(1, 1, " UTC - mysqld got exception"));
+ #else
+   EXPECT_DEATH_IF_SUPPORTED(
+-      abort(), ContainsRangeOfOccurrences(1, 1, " UTC - mysqld got signal 6"));
++      abort(), ContainsRangeOfOccurrences(1, 1, "(.* UTC - mysqld got signal 6.*|)"));
+ #endif
+ }

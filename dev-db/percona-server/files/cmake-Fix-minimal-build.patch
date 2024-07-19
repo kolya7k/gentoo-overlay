@@ -1,0 +1,27 @@
+From 7a358598d3d06dbe587f8884d4db9ba73198d41a Mon Sep 17 00:00:00 2001
+From: Thomas Deutschmann <whissi@gentoo.org>
+Date: Thu, 30 Apr 2020 19:59:04 +0200
+Subject: [PATCH 1/7] cmake: Fix minimal build
+
+Signed-off-by: Thomas Deutschmann <whissi@gentoo.org>
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1944,7 +1944,9 @@ IF(EDITLINE_WARN_GIVEN)
+ ENDIF()
+
+ # Add libevent
+-MYSQL_CHECK_LIBEVENT()
++IF(NOT WITHOUT_SERVER)
++  MYSQL_CHECK_LIBEVENT()
++ENDIF()
+ UNSET(LIBEVENT_WARN_GIVEN)
+ WARN_MISSING_SYSTEM_LIBEVENT(LIBEVENT_WARN_GIVEN)
+ IF(LIBEVENT_WARN_GIVEN)
+@@ -2370,6 +2372,7 @@ ENDIF()
+ # scripts/mysql_config depends on client and server targets loaded above.
+ # It is referenced by some of the directories below, so we insert it here.
+ ADD_SUBDIRECTORY(scripts)
++ADD_SUBDIRECTORY(support-files)
+
+ IF(NOT WITHOUT_SERVER)
+   ADD_SUBDIRECTORY(mysql-test)

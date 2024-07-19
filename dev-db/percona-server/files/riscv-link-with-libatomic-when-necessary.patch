@@ -1,0 +1,59 @@
+From 97e9f55198110820c985ad0fd7efec08e12dfc7e Mon Sep 17 00:00:00 2001
+From: alexfanqi <alex.fan.q@gmail.com>
+Date: Tue, 1 Feb 2022 10:41:26 +1100
+Subject: [PATCH 6/7] riscv: link with libatomic when necessary
+
+https://bugs.gentoo.org/761715
+https://github.com/MariaDB/server/pull/1974
+
+Signed-off-by: alexfanqi <alex.fan.q@gmail.com>
+Signed-off-by: Yixun Lan <dlan@gentoo.org>
+--- a/configure.cmake
++++ b/configure.cmake
+@@ -104,6 +104,25 @@ IF(UNIX)
+   MY_SEARCH_LIBS(timer_create rt LIBRT)
+   MY_SEARCH_LIBS(backtrace execinfo LIBEXECINFO)
+
++  SET(ATOMIC_TEST_SOURCE "
++  int main()
++  {
++    char x=1;
++    short y=1;
++    int z=1;
++    long w = 1;
++    long long s = 1;
++    x = __atomic_add_fetch(&x, 1, __ATOMIC_SEQ_CST);
++    y = __atomic_add_fetch(&y, 1, __ATOMIC_SEQ_CST);
++    z = __atomic_add_fetch(&z, 1, __ATOMIC_SEQ_CST);
++    w = __atomic_add_fetch(&w, 1, __ATOMIC_SEQ_CST);
++    return (int)__atomic_load_n(&s, __ATOMIC_SEQ_CST);
++  }" )
++  CHECK_CXX_SOURCE_COMPILES("${ATOMIC_TEST_SOURCE}" ATOMICS_ARE_BUILTIN)
++  IF(NOT ATOMICS_ARE_BUILTIN)
++    MY_SEARCH_LIBS(atomic_thread_fence atomic LIBATOMIC)
++  ENDIF()
++
+   LIST(APPEND CMAKE_REQUIRED_LIBRARIES
+     ${LIBM} ${LIBNSL} ${LIBBIND} ${LIBSOCKET} ${LIBDL}
+     ${CMAKE_THREAD_LIBS_INIT} ${LIBRT} ${LIBEXECINFO}
+--- a/mysys/CMakeLists.txt
++++ b/mysys/CMakeLists.txt
+@@ -203,6 +203,7 @@ ADD_CONVENIENCE_LIBRARY(mysys ${MYSYS_SOURCES}
+   ${LIBEXECINFO}
+   ${LIBUNWIND_LDFLAGS}
+   OpenSSL::SSL OpenSSL::Crypto
++  ${LIBATOMIC}
+   )
+
+ IF(WITH_EXT_BACKTRACE)
+--- a/router/src/harness/src/CMakeLists.txt
++++ b/router/src/harness/src/CMakeLists.txt
+@@ -147,7 +147,7 @@ ELSE()
+ ENDIF()
+
+ SET(common_libraries ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT}
+-  ${SHLWAPI_LIBRARIES} ${WINSOCK_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto)
++  ${SHLWAPI_LIBRARIES} ${WINSOCK_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto ${LIBATOMIC})
+
+ SET(INSTALL_INCLUDE_DIR "include/mysql/harness")
+

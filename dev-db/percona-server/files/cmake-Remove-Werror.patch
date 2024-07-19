@@ -1,0 +1,19 @@
+From 435ad0fa3a86fae63aa5d4d0c7fb417b644798c4 Mon Sep 17 00:00:00 2001
+From: Thomas Deutschmann <whissi@gentoo.org>
+Date: Thu, 30 Apr 2020 19:59:26 +0200
+Subject: [PATCH 2/7] cmake: Remove -Werror
+
+Signed-off-by: Thomas Deutschmann <whissi@gentoo.org>
+--- a/cmake/maintainer.cmake
++++ b/cmake/maintainer.cmake
+@@ -205,10 +205,6 @@ IF(MYSQL_MAINTAINER_MODE)
+     STRING_APPEND(CMAKE_MODULE_LINKER_FLAGS " /WX")
+     STRING_APPEND(CMAKE_SHARED_LINKER_FLAGS " /WX")
+   ENDIF()
+-  IF(MY_COMPILER_IS_GNU_OR_CLANG)
+-    STRING_APPEND(MY_C_WARNING_FLAGS   " -Werror")
+-    STRING_APPEND(MY_CXX_WARNING_FLAGS " -Werror")
+-  ENDIF()
+ ENDIF()
+
+ # Set warning flags for gcc/g++/clang/clang++

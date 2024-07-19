@@ -1,0 +1,39 @@
+--- a/components/keyrings/common/data/data.h
++++ b/components/keyrings/common/data/data.h
+@@ -67,7 +67,7 @@
+   pfs_string decode() const {
+     auto ret = data;
+     const auto key =
+-        std::hash<std::uintptr_t>{}(reinterpret_cast<std::uintptr_t>(this));
++        std::hash<uintptr_t>{}(reinterpret_cast<uintptr_t>(this));
+     for (auto &c : ret) {
+       c ^= key;
+     }
+@@ -82,7 +82,7 @@
+   void encode() {
+     for (auto &c : data) {
+       const auto key =
+-          std::hash<std::uintptr_t>{}(reinterpret_cast<std::uintptr_t>(this));
++          std::hash<uintptr_t>{}(reinterpret_cast<uintptr_t>(this));
+       c ^= key;
+     }
+   }
+--- a/mysys/buffered_error_log.h
++++ b/mysys/buffered_error_log.h
+@@ -6,6 +6,7 @@
+ #include <memory>
+ #include <mutex>
+ #include <vector>
++#include <string>
+
+ extern char *buffered_error_log_filename;
+
+--- a/components/audit_log_filter/event_filter_function/string_find.cc
++++ b/components/audit_log_filter/event_filter_function/string_find.cc
+@@ -16,6 +16,7 @@
+ #include "components/audit_log_filter/event_filter_function/string_find.h"
+
+ #include <functional>
++#include <algorithm>
+
+ namespace audit_log_filter::event_filter_function {
