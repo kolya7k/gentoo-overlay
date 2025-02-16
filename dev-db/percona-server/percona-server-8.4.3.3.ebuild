@@ -14,14 +14,10 @@ MY_P="${PN}-${MY_PV}"
 MY_MAJOR_PV=$(ver_cut 1-2)
 MY_RELEASE_NOTES_URI="https://www.percona.com/doc/percona-server/${MY_MAJOR_PV}/"
 
-# Patch version
-PATCH_SET=( https://cdn.realcdn.ru/distfiles/${CATEGORY}/${PN}/${P}-patches.tar.xz )
-
 HOMEPAGE="https://www.percona.com/software/mysql-database/percona-server https://github.com/percona/percona-server"
 DESCRIPTION="Fully compatible, enhanced and open source drop-in replacement for MySQL"
-SRC_URI="https://downloads.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/binary/tarball/${MY_PN}-${MY_PV}-Linux.x86_64.glibc2.35.tar.gz"
+SRC_URI="https://downloads.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/source/tarball/${PN}-${MY_PV}.tar.gz"
 SRC_URI+=" https://boostorg.jfrog.io/artifactory/main/release/${MY_BOOST_VERSION}/source/boost_$(ver_rs 1- _ ${MY_BOOST_VERSION}).tar.bz2"
-SRC_URI+=" ${PATCH_SET[@]}"
 # Shorten the path because the socket path length must be shorter than 107 chars
 # and we will run a mysql server during test phase
 S="${WORKDIR}/mysql"
