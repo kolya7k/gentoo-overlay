@@ -95,6 +95,7 @@ PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )"
 PATCHES=(
 	"${FILESDIR}"/${PN}-compile-fixes.patch
 	"${FILESDIR}"/${PN}-clickhouse-compat.patch
+	"${FILESDIR}"/${PN}-cmake-build-without-client-libs-and-tools.patch
 )
 
 mysql_init_vars() {
@@ -182,6 +183,12 @@ src_prepare() {
 		echo > "${S}/support-files/SELinux/CMakeLists.txt" || die
 	fi
 
+	# Remove man pages for client-lib tools we don't install
+	rm \
+		man/my_print_defaults.1 \
+		man/perror.1 \
+		|| die
+
 	cmake_src_prepare
 }
 
@@ -247,6 +254,8 @@ src_configure() {
 	else
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR='' )
 	fi
+
+	mycmakeargs+=( -DWITHOUT_CLIENTLIBS=YES )
 
 	mycmakeargs+=(
 		-DWITH_ICU=system

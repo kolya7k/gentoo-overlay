@@ -1,0 +1,236 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2272,7 +2272,9 @@
+ ADD_DEPENDENCIES(clang_tidy_prerequisites protobuf_generated_all)
+ ADD_DEPENDENCIES(clang_tidy_prerequisites GenError)
+
+-ADD_SUBDIRECTORY(include)
++IF(NOT WITHOUT_CLIENTLIBS)
++  ADD_SUBDIRECTORY(include)
++ENDIF(NOT WITHOUT_CLIENTLIBS)
+ ADD_SUBDIRECTORY(strings)
+ ADD_SUBDIRECTORY(vio)
+ ADD_SUBDIRECTORY(mysys)
+@@ -2409,7 +2411,6 @@
+ IF(NOT WITHOUT_SERVER)
+   ADD_SUBDIRECTORY(mysql-test)
+   ADD_SUBDIRECTORY(mysql-test/lib/My/SafeProcess)
+-  ADD_SUBDIRECTORY(support-files)
+   IF(WITH_INTERNAL)
+     ADD_SUBDIRECTORY(internal)
+   ENDIF()
+--- a/libmysql/CMakeLists.txt
++++ b/libmysql/CMakeLists.txt
+@@ -295,23 +295,32 @@
+   LIST(APPEND LIBS_TO_MERGE auth_win_client)
+ ENDIF()
+
+-# LDAP authentication SASL client plug-in
+-ADD_SUBDIRECTORY(authentication_ldap)
+-
+-# authentication kerberos client plug-in
+-ADD_SUBDIRECTORY(authentication_kerberos)
+-
+-# authentication IAM client plug-in
+-ADD_SUBDIRECTORY(authentication_oci_client)
+-
+-# Fido and Webauthn clients
+-ADD_SUBDIRECTORY(fido_client)
+-
+-# Merge several convenience libraries into one big perconaserverclient
+-MERGE_CONVENIENCE_LIBRARIES(perconaserverclient ${LIBS_TO_MERGE}
+-  COMPONENT Development
+-  LINK_LIBRARIES ${LIBS_TO_LINK}
+-  )
++IF(WITHOUT_CLIENTLIBS)
++  # Merge several convenience libraries into one big perconaserverclient
++  MERGE_CONVENIENCE_LIBRARIES(perconaserverclient ${LIBS_TO_MERGE}
++    COMPONENT Development
++    LINK_LIBRARIES ${LIBS_TO_LINK}
++    SKIP_INSTALL
++    )
++ELSE(WITHOUT_CLIENTLIBS)
++  # LDAP authentication SASL client plug-in
++  ADD_SUBDIRECTORY(authentication_ldap)
++
++  # authentication kerberos client plug-in
++  ADD_SUBDIRECTORY(authentication_kerberos)
++
++  # authentication IAM client plug-in
++  ADD_SUBDIRECTORY(authentication_oci_client)
++
++  # Fido and Webauthn clients
++  ADD_SUBDIRECTORY(fido_client)
++
++  # Merge several convenience libraries into one big perconaserverclient
++  MERGE_CONVENIENCE_LIBRARIES(perconaserverclient ${LIBS_TO_MERGE}
++    COMPONENT Development
++    LINK_LIBRARIES ${LIBS_TO_LINK}
++    )
++ENDIF(WITHOUT_CLIENTLIBS)
+
+ # Visual Studio users need debug  static library for debug projects
+ IF(MSVC)
+@@ -358,17 +367,32 @@
+
+ # Merge several convenience libraries into one big perconaserverclient
+ # and link them together into shared library.
+-MERGE_LIBRARIES_SHARED(libmysql ${LIBS_TO_MERGE}
+-  EXPORTS
+-  ${CLIENT_API_FUNCTIONS}
+-  ${CLIENT_API_FUNCTIONS_UNDOCUMENTED}
+-  ${CLIENT_API_NONBLOCKING_FUNCTIONS}
+-  COMPONENT SharedLibraries
+-  LINK_LIBRARIES ${LIBS_TO_LINK}
+-  ${UNIX_OUTPUT_NAME}
+-  ${UNIX_SOVERSION}
+-  ${UNIX_VERSION}
+-  )
++IF(WITHOUT_CLIENTLIBS)
++  MERGE_LIBRARIES_SHARED(libmysql ${LIBS_TO_MERGE}
++    EXPORTS
++    ${CLIENT_API_FUNCTIONS}
++    ${CLIENT_API_FUNCTIONS_UNDOCUMENTED}
++    ${CLIENT_API_NONBLOCKING_FUNCTIONS}
++    COMPONENT SharedLibraries
++    LINK_LIBRARIES ${LIBS_TO_LINK}
++    ${UNIX_OUTPUT_NAME}
++    ${UNIX_SOVERSION}
++    ${UNIX_VERSION}
++    SKIP_INSTALL
++    )
++ELSE(WITHOUT_CLIENTLIBS)
++  MERGE_LIBRARIES_SHARED(libmysql ${LIBS_TO_MERGE}
++    EXPORTS
++    ${CLIENT_API_FUNCTIONS}
++    ${CLIENT_API_FUNCTIONS_UNDOCUMENTED}
++    ${CLIENT_API_NONBLOCKING_FUNCTIONS}
++    COMPONENT SharedLibraries
++    LINK_LIBRARIES ${LIBS_TO_LINK}
++    ${UNIX_OUTPUT_NAME}
++    ${UNIX_SOVERSION}
++    ${UNIX_VERSION}
++    )
++ENDIF(WITHOUT_CLIENTLIBS)
+
+ # Downgrade warning for strncat in my_crypt_genhash.
+ IF((WITH_LTO OR CMAKE_COMPILER_FLAG_WITH_LTO) AND MY_COMPILER_IS_GNU)
+--- a/man/CMakeLists.txt
++++ b/man/CMakeLists.txt
+@@ -26,7 +26,6 @@
+   comp_err.1
+   ibd2sdi.1
+   innochecksum.1
+-  my_print_defaults.1
+   myisam_ftdump.1
+   myisamchk.1
+   myisamlog.1
+@@ -45,7 +44,6 @@
+   mysqlman.1
+   mysqlshow.1
+   mysqlslap.1
+-  perror.1
+   )
+
+ IF(NOT WITH_SYSTEMD)
+--- a/scripts/CMakeLists.txt
++++ b/scripts/CMakeLists.txt
+@@ -484,7 +484,7 @@
+     ${CMAKE_CURRENT_BINARY_DIR}/${PKGCONFIG_FILE}
+     ESCAPE_QUOTES @ONLY)
+
+-  IF(INSTALL_PKGCONFIGDIR)
++  IF(INSTALL_PKGCONFIGDIR AND NOT WITHOUT_CLIENTLIBS)
+     MESSAGE(STATUS "INSTALL ${PKGCONFIG_FILE} ${INSTALL_PKGCONFIGDIR}")
+     INSTALL(FILES
+       ${CMAKE_CURRENT_BINARY_DIR}/${PKGCONFIG_FILE}
+@@ -497,7 +497,6 @@
+   # mysqld_safe used in mtr even for systemd platforms
+   IF(WITH_SYSTEMD)
+     SET(BIN_SCRIPTS
+-      mysql_config
+       mysqldumpslow
+       mysqld_safe
+       ps_mysqld_helper
+@@ -505,7 +504,6 @@
+       )
+   ELSE()
+     SET(BIN_SCRIPTS
+-      mysql_config
+       mysqldumpslow
+       mysqld_multi
+       mysqld_safe
+@@ -514,6 +512,13 @@
+       )
+   ENDIF()
+
++  IF(NOT WITHOUT_CLIENTLIBS)
++    SET(BIN_SCRIPTS
++      ${BIN_SCRIPTS}
++      mysql_config
++    )
++  ENDIF(NOT WITHOUT_CLIENTLIBS)
++
+   FOREACH(file ${BIN_SCRIPTS})
+     IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh)
+       CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh
+--- a/support-files/CMakeLists.txt
++++ b/support-files/CMakeLists.txt
+@@ -25,8 +25,10 @@
+   RETURN()
+ ENDIF()
+
+-INSTALL(FILES mysql.m4
+-  DESTINATION ${INSTALL_SHAREDIR}/aclocal COMPONENT Development)
++IF(NOT WITHOUT_CLIENTLIBS)
++  INSTALL(FILES mysql.m4
++    DESTINATION ${INSTALL_SHAREDIR}/aclocal COMPONENT Development)
++ENDIF(NOT WITHOUT_CLIENTLIBS)
+
+ SET(localstatedir "${MYSQL_DATADIR}")
+
+--- a/utilities/CMakeLists.txt
++++ b/utilities/CMakeLists.txt
+@@ -121,17 +121,31 @@
+   EXCLUDE_FROM_ALL
+   )
+
+-MYSQL_ADD_EXECUTABLE(my_print_defaults
+-  my_print_defaults.cc
+-  COMPONENT Server
+-  LINK_LIBRARIES mysys
+-  )
+-MYSQL_ADD_EXECUTABLE(perror
+-  perror.cc
+-  COMPONENT Server
+-  DEPENDENCIES GenError
+-  LINK_LIBRARIES mysys
+-  )
++IF(WITHOUT_CLIENTLIBS)
++  MYSQL_ADD_EXECUTABLE(my_print_defaults
++    my_print_defaults.cc
++    COMPONENT Server
++    LINK_LIBRARIES mysys
++    SKIP_INSTALL )
++  MYSQL_ADD_EXECUTABLE(perror
++    perror.cc
++    COMPONENT Server
++    DEPENDENCIES GenError
++    LINK_LIBRARIES mysys
++    SKIP_INSTALL )
++ELSE(WITHOUT_CLIENTLIBS)
++  MYSQL_ADD_EXECUTABLE(my_print_defaults
++    my_print_defaults.cc
++    COMPONENT Server
++    LINK_LIBRARIES mysys
++    )
++  MYSQL_ADD_EXECUTABLE(perror
++    perror.cc
++    COMPONENT Server
++    DEPENDENCIES GenError
++    LINK_LIBRARIES mysys
++    )
++ENDIF(WITHOUT_CLIENTLIBS)
+
+ # All targets below belong to COMPONENT Server and depend on InnoDB.
+ IF(WITHOUT_SERVER)
