@@ -6,7 +6,6 @@ EAPI=8
 CMAKE_MAKEFILE_GENERATOR=emake
 inherit check-reqs cmake flag-o-matic linux-info multiprocessing prefix toolchain-funcs
 
-MY_BOOST_VERSION="1.84.0"
 MY_PV=$(ver_rs 3 '-')
 MY_PV="${MY_PV//_pre*}"
 MY_PN="Percona-Server"
@@ -17,7 +16,6 @@ MY_RELEASE_NOTES_URI="https://www.percona.com/doc/percona-server/${MY_MAJOR_PV}/
 HOMEPAGE="https://www.percona.com/software/mysql-database/percona-server https://github.com/percona/percona-server"
 DESCRIPTION="Fully compatible, enhanced and open source drop-in replacement for MySQL"
 SRC_URI="https://downloads.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/source/tarball/${PN}-${MY_PV}.tar.gz"
-SRC_URI+=" https://archives.boost.io/release/${MY_BOOST_VERSION}/source/boost_$(ver_rs 1- _ ${MY_BOOST_VERSION}).tar.bz2"
 # Shorten the path because the socket path length must be shorter than 107 chars
 # and we will run a mysql server during test phase
 S="${WORKDIR}/mysql"
@@ -26,7 +24,7 @@ LICENSE="GPL-2"
 SLOT="8.0"
 # -ppc, -riscv for bug #761715
 KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips -ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x64-solaris ~x86-solaris"
-IUSE="cjk cracklib debug jemalloc latin1 ldap kerberos fido numa pam +perl profiling rocksdb router selinux +server tcmalloc test"
+IUSE="cjk cracklib debug jemalloc latin1 ldap kerberos numa pam +perl profiling rocksdb router selinux +server tcmalloc test"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="?? ( tcmalloc jemalloc )
 	cjk? ( server )
@@ -227,19 +225,15 @@ src_configure() {
 
 		# Using bundled editline to get CTRL+C working
 		-DWITH_EDITLINE=bundled
-		-DWITH_ZLIB=bundled
+		-DWITH_ZLIB=system
 		-DWITH_SSL=system
 		-DWITH_LIBWRAP=0
 		-DENABLED_LOCAL_INFILE=1
 		-DMYSQL_UNIX_ADDR="${EPREFIX}/var/run/mysqld/mysqld.sock"
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
-		# The build forces this to be defined when cross-compiling. We pass it
-		# all the time for simplicity and to make sure it is actually correct.
-		-DSTACK_DIRECTION=$(tc-stack-grows-down && echo -1 || echo 1)
 		-DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
 		-DWITH_CURL=system
-		-DWITH_BOOST="${WORKDIR}/boost_$(ver_rs 1- _ ${MY_BOOST_VERSION})"
 		-DWITH_ROUTER=$(usex router ON OFF)
 	)
 
@@ -295,13 +289,9 @@ src_configure() {
 			-DWITH_PERCONA_AUTHENTICATION_LDAP=$(usex ldap ON OFF)
 			-DWITH_AUTHENTICATION_LDAP=$(usex ldap ON OFF)
 			-DWITH_AUTHENTICATION_KERBEROS=$(usex kerberos ON OFF)
-			-DWITH_PERCONA_AUTHENTICATION_FIDO=$(usex fido ON OFF)
-			-DWITH_AUTHENTICATION_FIDO=$(usex fido ON OFF)
 			-DWITH_COREDUMPER=OFF
-			-DWITH_EXTRA_CHARSETS=all
-			-DWITH_DEBUG=$(usex debug)
+			-DWITH_DEBUG=$(usex debug ON OFF)
 			-DWITH_MECAB=$(usex cjk system OFF)
-			-DWITH_LIBEVENT=system
 			-DWITH_PROTOBUF=system
 			-DWITH_NUMA=$(usex numa ON OFF)
 			-DWITH_PAM=$(usex pam ON OFF)
@@ -329,7 +319,6 @@ src_configure() {
 			-DWITH_FEDERATED_STORAGE_ENGINE=1
 			-DWITH_HEAP_STORAGE_ENGINE=1
 			-DWITH_INNOBASE_STORAGE_ENGINE=1
-			-DWITH_INNODB_MEMCACHED=0
 			-DWITH_MYISAMMRG_STORAGE_ENGINE=1
 			-DWITH_MYISAM_STORAGE_ENGINE=1
 			-DWITH_ROCKSDB=$(usex rocksdb 1 0)
