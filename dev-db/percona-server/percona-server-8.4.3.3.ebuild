@@ -6,7 +6,7 @@ EAPI=8
 CMAKE_MAKEFILE_GENERATOR=emake
 inherit check-reqs cmake flag-o-matic linux-info multiprocessing prefix toolchain-funcs
 
-MY_BOOST_VERSION="1.77.0"
+MY_BOOST_VERSION="1.84.0"
 MY_PV=$(ver_rs 3 '-')
 MY_PV="${MY_PV//_pre*}"
 MY_PN="Percona-Server"
@@ -19,7 +19,7 @@ PATCH_SET=( https://cdn.realcdn.ru/distfiles/${CATEGORY}/${PN}/${P}-patches.tar.
 
 HOMEPAGE="https://www.percona.com/software/mysql-database/percona-server https://github.com/percona/percona-server"
 DESCRIPTION="Fully compatible, enhanced and open source drop-in replacement for MySQL"
-SRC_URI="https://downloads.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/source/tarball/${PN}-${MY_PV}.tar.gz"
+SRC_URI="https://downloads.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/binary/tarball/${MY_PN}-${MY_PV}-Linux.x86_64.glibc2.35.tar.gz"
 SRC_URI+=" https://boostorg.jfrog.io/artifactory/main/release/${MY_BOOST_VERSION}/source/boost_$(ver_rs 1- _ ${MY_BOOST_VERSION}).tar.bz2"
 SRC_URI+=" ${PATCH_SET[@]}"
 # Shorten the path because the socket path length must be shorter than 107 chars
@@ -99,7 +99,11 @@ RDEPEND="
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )"
 
 PATCHES=(
-	"${WORKDIR}"/"${PN}"-patches
+	"${FILESDIR}"/${PN}-cmake-Fix-minimal-build.patch
+	"${FILESDIR}"/${PN}-cmake-Remove-Werror.patch
+	"${FILESDIR}"/${PN}-cmake-build-without-client-libs-and-tools.patch
+	"${FILESDIR}"/${PN}-compile-fixes.patch
+	"${FILESDIR}"/${PN}-clickhouse-compat.patch
 )
 
 mysql_init_vars() {
@@ -201,8 +205,7 @@ src_configure() {
 	# Bug #114895, bug #110149
 	filter-flags "-O" "-O[01]"
 
-	# Code is now requiring C++17 due to https://github.com/mysql/mysql-server/commit/236ab55bedd8c9eacd80766d85edde2a8afacd08
-	append-cxxflags -std=c++17
+	append-cxxflags -std=c++20
 
 	CMAKE_BUILD_TYPE="RelWithDebInfo"
 

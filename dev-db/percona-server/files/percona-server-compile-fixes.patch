@@ -27,13 +27,3 @@
 +#include <string>
 
  extern char *buffered_error_log_filename;
-
---- a/components/audit_log_filter/event_filter_function/string_find.cc
-+++ b/components/audit_log_filter/event_filter_function/string_find.cc
-@@ -16,6 +16,7 @@
- #include "components/audit_log_filter/event_filter_function/string_find.h"
-
- #include <functional>
-+#include <algorithm>
-
- namespace audit_log_filter::event_filter_function {
