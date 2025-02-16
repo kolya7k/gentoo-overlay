@@ -95,9 +95,6 @@ RDEPEND="
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )"
 
 PATCHES=(
-	"${FILESDIR}"/${PN}-cmake-Fix-minimal-build.patch
-	"${FILESDIR}"/${PN}-cmake-Remove-Werror.patch
-	"${FILESDIR}"/${PN}-cmake-build-without-client-libs-and-tools.patch
 	"${FILESDIR}"/${PN}-compile-fixes.patch
 	"${FILESDIR}"/${PN}-clickhouse-compat.patch
 )
@@ -262,8 +259,6 @@ src_configure() {
 	else
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR='' )
 	fi
-
-	mycmakeargs+=( -DWITHOUT_CLIENTLIBS=YES )
 
 	mycmakeargs+=(
 		-DWITH_ICU=system
