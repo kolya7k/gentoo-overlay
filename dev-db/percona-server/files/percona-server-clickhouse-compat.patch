@@ -39,7 +39,7 @@
 
 --- a/sql/auth/mysql_native_password.cc
 +++ b/sql/auth/mysql_native_password.cc
-@@ -85,23 +85,10 @@
+@@ -85,29 +85,10 @@
  */
  /* clang-format on */
 
@@ -69,7 +69,7 @@
    if (!thd->m_disable_password_validation) {
      if (my_validate_password_policy(inbuf, inbuflen)) return 1;
    }
-@@ -206,8 +193,6 @@
+@@ -213,8 +194,6 @@
 
    DBUG_TRACE;
 
