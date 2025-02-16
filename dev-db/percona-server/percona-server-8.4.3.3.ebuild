@@ -560,33 +560,9 @@ src_install() {
 	einfo "Building default configuration ..."
 	insinto "${MY_SYSCONFDIR#${EPREFIX}}"
 	[[ -f "${S}/scripts/mysqlaccess.conf" ]] && doins "${S}"/scripts/mysqlaccess.conf
-	cp "${FILESDIR}/my.cnf-5.7" "${TMPDIR}/my.cnf" || die
+	cp "${FILESDIR}/my.cnf" "${TMPDIR}/my.cnf" || die
 	eprefixify "${TMPDIR}/my.cnf"
 	doins "${TMPDIR}/my.cnf"
-	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mysql.d"
-	cp "${FILESDIR}/my.cnf-8.0.distro-client" "${TMPDIR}/50-distro-client.cnf" || die
-	eprefixify "${TMPDIR}/50-distro-client.cnf"
-	doins "${TMPDIR}/50-distro-client.cnf"
-
-	mycnf_src="my.cnf-8.0.distro-server"
-	sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
-		"${FILESDIR}/${mycnf_src}" \
-		> "${TMPDIR}/my.cnf.ok" || die
-
-	if use prefix ; then
-		sed -i -r -e '/^user[[:space:]]*=[[:space:]]*mysql$/d' \
-			"${TMPDIR}/my.cnf.ok" || die
-	fi
-
-	if use latin1 ; then
-		sed -i \
-			-e "/character-set/s|utf8mb4|latin1|g" \
-			"${TMPDIR}/my.cnf.ok" || die
-	fi
-
-	eprefixify "${TMPDIR}/my.cnf.ok"
-
-	newins "${TMPDIR}/my.cnf.ok" 50-distro-server.cnf
 
 	#Remove mytop if perl is not selected
 	[[ -e "${ED}/usr/bin/mytop" ]] && ! use perl && rm -f "${ED}/usr/bin/mytop"
@@ -611,16 +587,6 @@ pkg_postinst() {
 	# Create log directory securely if it does not exist
 	# NOTE: $MY_LOGDIR contains $EPREFIX by default
 	[[ -d "${MY_LOGDIR}" ]] || install -d -m0750 -o mysql -g mysql "${MY_LOGDIR}"
-
-	# Note about configuration change
-	einfo
-	elog "This version of ${PN} reorganizes the configuration from a single my.cnf"
-	elog "to several files in /etc/mysql/mysql.d."
-	elog "Please backup any changes you made to /etc/mysql/my.cnf"
-	elog "and add them as a new file under /etc/mysql/mysql.d with a .cnf extension."
-	elog "You may have as many files as needed and they are read alphabetically."
-	elog "Be sure the options have the appropriate section headers, i.e. [mysqld]."
-	einfo
 
 	if [[ -z "${REPLACING_VERSIONS}" ]] ; then
 		einfo
