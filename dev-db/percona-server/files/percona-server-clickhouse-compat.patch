@@ -16,7 +16,7 @@
 +    "Not used, added to compatible with ClickHouse",
 +    READ_ONLY NON_PERSIST GLOBAL_VAR(default_authentication_plugin),
 +    NO_CMD_LINE, DEFAULT("mysql_native_password"),
-+    NO_MUTEX_GUARD, NOT_IN_BINLOG, ON_CHECK(nullptr), ON_UPDATE(nullptr);
++    NO_MUTEX_GUARD, NOT_IN_BINLOG, ON_CHECK(nullptr), ON_UPDATE(nullptr));
 +
  static Sys_var_charptr Sys_log_error(
      "log_error", "Error log file",
