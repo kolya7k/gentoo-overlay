@@ -1,6 +1,6 @@
 --- a/sql/sys_vars.cc
 +++ b/sql/sys_vars.cc
-@@ -2502,6 +2502,13 @@
+@@ -2502,6 +2502,20 @@
      "check_proxy_users is enabled.",
      GLOBAL_VAR(sha256_password_proxy_users), CMD_LINE(OPT_ARG), DEFAULT(false));
 
@@ -11,28 +11,37 @@
 +    NO_CMD_LINE, DEFAULT(false),
 +    NO_MUTEX_GUARD, NOT_IN_BINLOG, ON_CHECK(nullptr), ON_UPDATE(nullptr));
 +
++static Sys_var_charptr Sys_default_authentication_plugin(
++    "default_authentication_plugin",
++    "Not used, added to compatible with ClickHouse",
++    READ_ONLY NON_PERSIST GLOBAL_VAR(default_authentication_plugin),
++    NO_CMD_LINE, DEFAULT("mysql_native_password"),
++    NO_MUTEX_GUARD, NOT_IN_BINLOG, ON_CHECK(nullptr), ON_UPDATE(nullptr);
++
  static Sys_var_charptr Sys_log_error(
      "log_error", "Error log file",
      READ_ONLY NON_PERSIST GLOBAL_VAR(log_error_dest),
 
 --- a/sql/mysqld.h
 +++ b/sql/mysqld.h
-@@ -328,6 +328,7 @@
+@@ -328,6 +328,8 @@
  extern ulong opt_mts_replica_parallel_workers;
  extern ulonglong opt_mts_pending_jobs_size_max;
  extern ulong rpl_stop_replica_timeout;
 +extern bool log_bin_use_v1_row_events;
++extern char *default_authentication_plugin;
  extern ulong what_to_log, flush_time;
  extern ulonglong denied_connections;
  extern ulong max_prepared_stmt_count, prepared_stmt_count;
 
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -1402,6 +1402,7 @@
+@@ -1402,6 +1402,8 @@
  ulong binlog_stmt_cache_use = 0, binlog_stmt_cache_disk_use = 0;
  ulong max_connections, max_connect_errors;
  ulong rpl_stop_replica_timeout = LONG_TIMEOUT;
 +bool log_bin_use_v1_row_events = false;
++char *default_authentication_plugin;
  bool thread_cache_size_specified = false;
  bool host_cache_size_specified = false;
  bool table_definition_cache_specified = false;
