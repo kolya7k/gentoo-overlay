@@ -44,7 +44,6 @@ COMMON_DEPEND="
 	server? (
 		dev-libs/icu:=
 		|| ( <dev-libs/libevent-2.1.12-r1:=[ssl,threads] >=dev-libs/libevent-2.1.12-r1:=[ssl] )
-		>=dev-libs/protobuf-3.8:=
 		net-libs/libtirpc:=
 		cjk? ( app-text/mecab:= )
 		ldap? (
@@ -295,7 +294,7 @@ src_configure() {
 			-DWITH_COREDUMPER=OFF
 			-DWITH_DEBUG=$(usex debug ON OFF)
 			-DWITH_MECAB=$(usex cjk system OFF)
-			-DWITH_PROTOBUF=system
+			-DWITH_PROTOBUF=bundled
 			-DWITH_NUMA=$(usex numa ON OFF)
 			-DWITH_PAM=$(usex pam ON OFF)
 		)
