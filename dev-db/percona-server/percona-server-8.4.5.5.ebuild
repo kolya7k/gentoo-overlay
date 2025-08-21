@@ -24,7 +24,7 @@ LICENSE="GPL-2"
 SLOT="8.0"
 # -ppc, -riscv for bug #761715
 KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips -ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x64-solaris ~x86-solaris"
-IUSE="cjk cracklib debug jemalloc latin1 ldap kerberos numa pam +perl profiling rocksdb router selinux +server tcmalloc test"
+IUSE="cjk cracklib debug jemalloc ldap kerberos numa pam +perl profiling rocksdb router selinux +server tcmalloc test"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="?? ( tcmalloc jemalloc )
 	cjk? ( server )
@@ -141,11 +141,6 @@ pkg_setup() {
 			local aio_max_nr=$(sysctl -n fs.aio-max-nr 2>/dev/null)
 			[[ -z "${aio_max_nr}" || ${aio_max_nr} -lt 250000 ]] \
 				&& die "FEATURES=test will require fs.aio-max-nr=250000 at minimum!"
-
-			if use latin1 ; then
-				# Upstream only supports tests with default charset
-				die "Testing with USE=latin1 is not supported."
-			fi
 		fi
 
 		if use kernel_linux ; then
@@ -273,11 +268,6 @@ src_configure() {
 		mycmakeargs+=(
 			-DDEFAULT_CHARSET=${MYSQL_DEFAULT_CHARSET}
 			-DDEFAULT_COLLATION=${MYSQL_DEFAULT_COLLATION}
-		)
-	elif use latin1 ; then
-		mycmakeargs+=(
-			-DDEFAULT_CHARSET=latin1
-			-DDEFAULT_COLLATION=latin1_swedish_ci
 		)
 	else
 		mycmakeargs+=(
