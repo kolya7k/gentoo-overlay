@@ -18,7 +18,7 @@ S="${WORKDIR}/${PN}_${MY_PV}"
 
 LICENSE="Boost-1.0"
 SLOT="0/${PV}"
-KEYWORDS="~alpha amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~arm64-macos ~x64-macos ~x64-solaris"
+KEYWORDS="~alpha amd64 arm arm64 ~hppa ~loong ~m68k ~mips ppc ppc64 ~riscv ~s390 ~sparc x86 ~arm64-macos ~x64-macos ~x64-solaris"
 IUSE="bzip2 +context debug doc icu lzma +nls mpi numpy python +stacktrace test test-full tools zlib zstd static-libs"
 REQUIRED_USE="
 	python? ( ${PYTHON_REQUIRED_USE} )
@@ -57,6 +57,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.89.0-python-exclude-broken-tests.patch
 	"${FILESDIR}"/${PN}-1.89.0-unordered-no-tbb.patch
 	"${FILESDIR}"/${PN}-1.90.0-msm-std.patch
+	"${FILESDIR}"/${PN}-1.90.0-unsigned-char-EOF.patch
 )
 
 create_user-config.jam() {
