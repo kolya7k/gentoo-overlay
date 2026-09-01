@@ -1,17 +1,13 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
-# Keep an eye on both of these after releases for patches:
-# * https://www.boost.org/patches/
-# * https://www.boost.org/users/history/version_${MY_PV}.html
-# (e.g. https://www.boost.org/users/history/version_1_83_0.html)
-# Note that the latter may sometimes feature patches not on the former too.
+# Keep an eye on releases: https://www.boost.org/releases/
 
-PYTHON_COMPAT=( python3_{10..13} )
+PYTHON_COMPAT=( python3_{11..14} )
 
-inherit flag-o-matic multiprocessing python-r1 toolchain-funcs multilib-minimal
+inherit dot-a edo flag-o-matic multiprocessing python-r1 toolchain-funcs multilib-minimal
 
 MY_PV="$(ver_rs 1- _)"
 
@@ -22,39 +18,49 @@ S="${WORKDIR}/${PN}_${MY_PV}"
 
 LICENSE="Boost-1.0"
 SLOT="0/${PV}"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~arm64-macos ~ppc-macos ~x64-macos ~x64-solaris"
-IUSE="bzip2 +context debug doc icu lzma +nls mpi numpy python +stacktrace tools zlib zstd static-libs"
-REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
-# the tests will never fail because these are not intended as sanity
-# tests at all. They are more a way for upstream to check their own code
-# on new compilers. Since they would either be completely unreliable
-# (failing for no good reason) or completely useless (never failing)
-# there is no point in having them in the ebuild to begin with.
-RESTRICT="test"
+#KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~arm64-macos ~x64-macos ~x64-solaris"
+IUSE="bzip2 +context debug doc icu lzma +nls mpi numpy python +stacktrace test test-full tools zlib zstd static-libs"
+REQUIRED_USE="
+	python? ( ${PYTHON_REQUIRED_USE} )
+	test-full? ( test )
+"
+RESTRICT="!test? ( test )"
 
 RDEPEND="
 	bzip2? ( app-arch/bzip2:=[${MULTILIB_USEDEP}] )
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
 	!icu? ( virtual/libiconv[${MULTILIB_USEDEP}] )
 	lzma? ( app-arch/xz-utils:=[${MULTILIB_USEDEP}] )
-	mpi? ( virtual/mpi[${MULTILIB_USEDEP},cxx,threads] )
+	mpi? ( virtual/mpi[${MULTILIB_USEDEP},threads] )
 	python? (
 		${PYTHON_DEPS}
 		numpy? ( dev-python/numpy:=[${PYTHON_USEDEP}] )
 	)
-	zlib? ( sys-libs/zlib:=[${MULTILIB_USEDEP}] )
+	zlib? ( virtual/zlib:=[${MULTILIB_USEDEP}] )
 	zstd? ( app-arch/zstd:=[${MULTILIB_USEDEP}] )"
 DEPEND="${RDEPEND}"
 BDEPEND=">=dev-build/b2-5.1.0"
 
 PATCHES=(
-	"${FILESDIR}"/${PN}-1.81.0-disable_icu_rpath.patch
-	"${FILESDIR}"/${PN}-1.79.0-build-auto_index-tool.patch
-	"${FILESDIR}"/${PN}-1.87.0-move.patch
-	"${FILESDIR}"/${PN}-1.87.0-smart_ptr-operator.patch
-	"${FILESDIR}"/${PN}-1.87.0-thread-typo.patch
-	"${FILESDIR}"/${PN}-1.87.0-solaris.patch
-	"${FILESDIR}"/${PN}-1.87.0-process-error-alpha.patch
+	"${FILESDIR}"/${PN}-1.88.0-disable_icu_rpath.patch
+	"${FILESDIR}"/${PN}-1.88.0-build-auto_index-tool.patch
+	"${FILESDIR}"/${PN}-1.88.0-beast-network-sandbox.patch
+	"${FILESDIR}"/${PN}-1.88.0-bind-no-Werror.patch
+	"${FILESDIR}"/${PN}-1.88.0-system-crashing-test.patch
+	"${FILESDIR}"/${PN}-1.88.0-yap-cstdint.patch
+	# https://github.com/boostorg/dll/issues/108
+	"${FILESDIR}"/${PN}-1.89.0-dll-no-lto.patch
+	"${FILESDIR}"/${PN}-1.89.0-graph-remove-system-dependency.patch
+	"${FILESDIR}"/${PN}-1.89.0-predef-include-path.patch
+	"${FILESDIR}"/${PN}-1.89.0-python-exclude-broken-tests.patch
+	"${FILESDIR}"/${PN}-1.89.0-unordered-no-tbb.patch
+	"${FILESDIR}"/${PN}-1.90.0-cobalt.patch
+	"${FILESDIR}"/${PN}-1.90.0-msm-std.patch
+	"${FILESDIR}"/${PN}-1.90.0-unsigned-char-EOF.patch
+	"${FILESDIR}"/${PN}-1.91.0-optional-bool-copy-ctor.patch
+	"${FILESDIR}"/${PN}-1.91.0-spirit-test.patch
+	"${FILESDIR}"/${PN}-1.91.0-uninitialised-buffer.patch
+	"${FILESDIR}"/${PN}-1.91.0-wave-test-cfg.patch
 )
 
 create_user-config.jam() {
@@ -142,6 +148,19 @@ ejam() {
 }
 
 src_configure() {
+	# -Werror=odr
+	# https://bugs.gentoo.org/943975
+	# https://github.com/boostorg/quickbook/issues/27
+	# https://github.com/boostorg/spirit/issues/800
+	#
+	# Tests also fail:
+	# https://bugs.gentoo.org/956660
+	# https://github.com/boostorg/smart_ptr/issues/121
+	# https://github.com/boostorg/thread/issues/415
+	filter-lto
+
+	lto-guarantee-fat
+
 	# Workaround for too many parallel processes requested, bug #506064
 	[[ "$(makeopts_jobs)" -gt 64 ]] && MAKEOPTS="${MAKEOPTS} -j64"
 
@@ -209,6 +228,121 @@ multilib_src_compile() {
 			"${OPTIONS[@]}" \
 			|| die "Building of Boost tools failed"
 		popd >/dev/null || die
+	fi
+}
+
+multilib_src_test() {
+	##
+	## Test exclusions
+	##
+
+	# The following libraries do not compile or fail their tests:
+	local libs_excluded=(
+		# it seems tests are no longer built
+		"callable_traits"
+		# test output comparison failure
+		"config"
+		# undefined reference to `boost::math::concepts::real_concept boost::math::bernoulli_b2n<boost::math::concepts::real_concept>(int)
+		"math"
+		# In function 'PyObject* boost::parameter::python::aux::unspecified_type()':
+		#  /usr/include/python3.13/object.h:339:30: error: lvalue required as left operand of assignment
+		#  #define Py_TYPE(ob) Py_TYPE(_PyObject_CAST(ob))
+		#                      ~~~~~~~^~~~~~~~~~~~~~~~~~~~
+		"parameter_python"
+		# scope/lambda_tests22.cpp(27): test 'x == 1' failed in function 'int main()'
+		"phoenix"
+		# vec_access.hpp:95:223: error: static assertion failed: Boost QVM static assertion failure
+		"qvm"
+		# In function 'void boost::redis::detail::update_sentinel_list(std::vector<boost::redis::address>&,
+		#  std::size_t, boost::span<const boost::redis::address>, boost::span<const boost::redis::address>)':
+		#  boost/redis/impl/sentinel_utils.hpp:269:20: error: no matching function for call to
+		#  'find(std::vector<boost::redis::address>::iterator, std::vector<boost::redis::address>::iterator,
+		#    const boost::redis::address&)'
+		"redis"
+		# Processing file ../boost_1_89_0/libs/regex/example/../include/boost/regex/v5/regex_iterator.hpp
+		# terminate called after throwing an instance of 'std::length_error'
+		#   what():  basic_string::_M_create
+		# https://github.com/boostorg/regex/issues/274
+		"regex"
+		# in function `boost::archive::tmpnam(char*)': test_array.cpp:(.text+0x108):
+		#   undefined reference to `boost::filesystem::detail::unique_path(...)'
+		"serialization"
+		# TuTestMain.cpp(22) fatal error: in "test_main_caller( argc_ argv )":
+		#   std::runtime_error: Event was not consumed!
+		"statechart"
+	)
+
+	if ! use mpi; then
+		# graph_parallel tries to use MPI even with use=-mpi
+		local no_mpi=( "mpi" "graph_parallel" )
+		einfo "Disabling tests due to USE=-mpi: ${no_mpi[@]}"
+		libs_excluded+=( ${no_mpi[@]} )
+	fi
+
+	if ! use test-full; then
+		# passes its tests but takes a very long time to build
+		local no_full=( "geometry" "multiprecision" )
+		einfo "Disabling expensive tests due to USE=-test-full: ${no_full[@]}"
+		libs_excluded+=( ${no_full[@]} )
+	fi
+
+	einfo "Skipping the following tests: ${libs_excluded[@]}"
+
+	##
+	## Find and run tests
+	##
+
+	# Prepare to find libraries but without exclusions
+	local excluded findlibs="find ${BUILD_DIR}/libs -maxdepth 1 -mindepth 1 -type d "
+	for excluded in ${libs_excluded[@]}; do
+	   findlibs+="-not -name ${excluded} "
+	done
+
+	# Must come as last argument
+	findlibs+="-print0"
+
+	# Collect libraries to test, with full path.
+	# The list is then sorted to provide predictable execution order,
+	# which would otherwise depend on the file system.
+	local libs
+	readarray -td '' libs < <(${findlibs})
+	readarray -td '' libs < <(printf '%s\0' "${libs[@]}" | sort -z)
+
+	# Build the list of test names we are about to run
+	local lib_names
+	for lib in ${libs[@]}; do
+		lib_names+=("${lib##*/}")
+	done
+
+	# Create custom options for tests based on the build settings
+	TEST_OPTIONS=("${OPTIONS[@]}")
+
+	# Dial down log output - the full b2 command used to compile & run
+	# a test suite will be printed by ejam and can be used to build
+	# and run the tests in a test suite's directory.
+	TEST_OPTIONS=("${TEST_OPTIONS[@]/-d+2/-d0}")
+
+	# Finally build & run all test suites
+	einfo "Running the following tests: ${lib_names[*]}"
+
+	local failed_tests=()
+	for lib in "${libs[@]}"; do
+		# Skip libraries without test directory
+		[[ ! -d "${lib}/test" ]] && continue
+
+		# Move into library test dir & run all tests
+		pushd "${lib}/test" >/dev/null || die
+		nonfatal edob -m "Running tests in: $(pwd)" ejam --prefix="${EPREFIX}"/usr "${TEST_OPTIONS[@]}" || failed_tests+=( "${lib}" )
+		popd >/dev/null || die
+	done
+
+	if (( ${#failed_tests[@]} )); then
+		eerror "Failed tests. Printing summary."
+		local failed_test
+		for failed_test in "${failed_tests[@]}" ; do
+			eerror "Failed test: ${failed_test}"
+		done
+		die "Tests failed."
 	fi
 }
 
@@ -316,6 +450,8 @@ multilib_src_install_all() {
 
 		dosym ../../../../include/boost /usr/share/doc/${PF}/html/boost
 	fi
+
+	strip-lto-bytecode
 }
 
 pkg_preinst() {
