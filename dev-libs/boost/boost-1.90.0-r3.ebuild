@@ -18,7 +18,7 @@ S="${WORKDIR}/${PN}_${MY_PV}"
 
 LICENSE="Boost-1.0"
 SLOT="0/${PV}"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~arm64-macos ~x64-macos ~x64-solaris"
+KEYWORDS="~alpha amd64 arm arm64 ~hppa ~loong ~m68k ~mips ppc ppc64 ~riscv ~s390 ~sparc x86 ~arm64-macos ~x64-macos ~x64-solaris"
 IUSE="bzip2 +context debug doc icu lzma +nls mpi numpy python +stacktrace test test-full tools zlib zstd static-libs"
 REQUIRED_USE="
 	python? ( ${PYTHON_REQUIRED_USE} )
@@ -27,6 +27,7 @@ REQUIRED_USE="
 RESTRICT="!test? ( test )"
 
 RDEPEND="
+	dev-libs/openssl:=
 	bzip2? ( app-arch/bzip2:=[${MULTILIB_USEDEP}] )
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
 	!icu? ( virtual/libiconv[${MULTILIB_USEDEP}] )
@@ -44,8 +45,10 @@ BDEPEND=">=dev-build/b2-5.1.0"
 PATCHES=(
 	"${FILESDIR}"/${PN}-1.88.0-disable_icu_rpath.patch
 	"${FILESDIR}"/${PN}-1.88.0-build-auto_index-tool.patch
+	"${FILESDIR}"/${PN}-1.88.0-algorithm-reverse_copy.patch
 	"${FILESDIR}"/${PN}-1.88.0-beast-network-sandbox.patch
 	"${FILESDIR}"/${PN}-1.88.0-bind-no-Werror.patch
+	"${FILESDIR}"/${PN}-1.88.0-range-any_iterator.patch
 	"${FILESDIR}"/${PN}-1.88.0-system-crashing-test.patch
 	"${FILESDIR}"/${PN}-1.88.0-yap-cstdint.patch
 	# https://github.com/boostorg/dll/issues/108
@@ -57,10 +60,6 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.90.0-cobalt.patch
 	"${FILESDIR}"/${PN}-1.90.0-msm-std.patch
 	"${FILESDIR}"/${PN}-1.90.0-unsigned-char-EOF.patch
-	"${FILESDIR}"/${PN}-1.91.0-optional-bool-copy-ctor.patch
-	"${FILESDIR}"/${PN}-1.91.0-spirit-test.patch
-	"${FILESDIR}"/${PN}-1.91.0-uninitialised-buffer.patch
-	"${FILESDIR}"/${PN}-1.91.0-wave-test-cfg.patch
 )
 
 create_user-config.jam() {
@@ -253,16 +252,9 @@ multilib_src_test() {
 		"phoenix"
 		# vec_access.hpp:95:223: error: static assertion failed: Boost QVM static assertion failure
 		"qvm"
-		# In function 'void boost::redis::detail::update_sentinel_list(std::vector<boost::redis::address>&,
-		#  std::size_t, boost::span<const boost::redis::address>, boost::span<const boost::redis::address>)':
-		#  boost/redis/impl/sentinel_utils.hpp:269:20: error: no matching function for call to
-		#  'find(std::vector<boost::redis::address>::iterator, std::vector<boost::redis::address>::iterator,
-		#    const boost::redis::address&)'
-		"redis"
 		# Processing file ../boost_1_89_0/libs/regex/example/../include/boost/regex/v5/regex_iterator.hpp
 		# terminate called after throwing an instance of 'std::length_error'
 		#   what():  basic_string::_M_create
-		# https://github.com/boostorg/regex/issues/274
 		"regex"
 		# in function `boost::archive::tmpnam(char*)': test_array.cpp:(.text+0x108):
 		#   undefined reference to `boost::filesystem::detail::unique_path(...)'
@@ -270,6 +262,8 @@ multilib_src_test() {
 		# TuTestMain.cpp(22) fatal error: in "test_main_caller( argc_ argv )":
 		#   std::runtime_error: Event was not consumed!
 		"statechart"
+		# t_5_007.cpp(22): error: could not find include file: boost/version.hpp
+		"wave"
 	)
 
 	if ! use mpi; then
